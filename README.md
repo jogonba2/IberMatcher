@@ -25,24 +25,23 @@ https://creativecommons.org/licenses/by-sa/4.0
 </h3>
 
 # 📖 Introduction
----
 IberMatcher is a package to find the best reviewers for IberLEF task proposals. The problem definition is as follows.
 
-We have a set of $N$ papers: $\mathcal{P} = \{p_1, ..., p_N\}$, and a set of $R$ reviewers: $\mathcal{R} = \{r_1, ..., r_R\}$. We have to found a paper-reviewer assignment $A$ as:
+We have a set of $N$ papers: $\mathcal{P} = \lbrace p_1, ..., p_N\rbrace$, and a set of $R$ reviewers: $\mathcal{R} = \lbrace r_1, ..., r_R\rbrace$. We have to found a paper-reviewer assignment $A$ as:
 
-$A = \{a_1, a_2, ..., a_N: a_i = \{a_{i1}, ..., a_{ik} : a_{ij} \in \mathcal{R}\}\}$
+$A = \lbrace a_1, a_2, ..., a_N: a_i = \lbrace a_{i1}, ..., a_{ik} : a_{ij} \in \mathcal{R}\rbrace\rbrace$
 
 where $k$ is the number of reviewers per paper.
 
 The objective is to maximize the score $s(A)$:
 
-$s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k}\; \text{sim}(\text{categories}(a_{ij}), \text{definition}(p_i))$
+$s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k}\ \text{sim}(\text{categories}(a_{ij}), \text{definition}(p_i))$
 
-subject to a set of constraints $\mathcal{C}$, where categories($a_{ij}$) is the list of research categories of the reviewer $j$ assigned to the paper $i$ ($a_{ij}$), and definition($p_i$) is a definition of the paper $p_i$, e.g., title and abstract.
+subject to a set of constraints $\mathcal{C}$, where categories($a_{ij}$) is the list of research categories embeddings of the reviewer $j$ assigned to the paper $i$, and definition($p_i$) is the embedding of the $p_i$ paper's definition, e.g., title and abstract.
 
 In this context, $sim$ can be any similarity function between a list of strings and a string. Intuitively, the best suited similarity for the paper-reviewer assignation is the maximum similarity between a research category and the paper definition, e.g.:
 
-$sim(X, y) = \underset{\bm{x}\in X}{max}\; f(\bm{x}, \bm{y})$
+$sim(X, y) = \underset{\mathbf{x}\in X}{max}\; f(\mathbf{x}, \mathbf{y})$
 
 The optimal solution to the paper-reviewer assignation is given by:
 
@@ -60,17 +59,15 @@ subject to a set of constraints $\mathcal{C}$:
 All these constraints all already integrated in IberMatch.
 
 # 🧮 Matching algorithms
----
 IberMatch provides three matching algorithms: **greedy**, **beam search**, and **branch and bound**.
 
-The **greedy** algorithm evaluates, paper by paper, all potential reviewers and assigns to each paper the highest-ranked reviewers, ensuring feasible solutions (meeting the constraints $\mathcal{C}$). Since finding a greedy solution depends on the order of the papers and reviewers, the algorithm is repeated several times by shuffling papers and reviewers and returns the best solution if any.
+- **Greedy**: evaluates, paper by paper, all potential reviewers and assigns to each paper the highest-ranked reviewers, ensuring feasible solutions (meeting the constraints $\mathcal{C}$). Since finding a greedy solution depends on the order of the papers and reviewers, the algorithm is repeated several times by shuffling papers and reviewers and returns the best solution if any.
 
-The **branch and bound** (BnB) algorithm adheres to the [classical BnB framework](https://en.wikipedia.org/wiki/Branch_and_bound) to identify optimal assignments. At each step, it evaluates the most promising solutions by employing a greedy solution as the lower bound and an optimistic upper bound derived by relaxing all constraints. This approach guides the selection of promising branches for further exploration. If a greedy solution is unavailable, the algorithm resorts to a heuristic bound calculated as $num\_papers\times reviewers\_per\_paper\times 0.4$. That is, assumes a similarity of 0.4 among all the reviewers and papers.
+- **Branch and bound**: adheres to the [classical BnB framework](https://en.wikipedia.org/wiki/Branch_and_bound) to identify optimal assignments. At each step, it evaluates the most promising solutions by employing a greedy solution as the lower bound and an optimistic upper bound derived by relaxing all constraints. This approach guides the selection of promising branches for further exploration. If a greedy solution is unavailable, the algorithm resorts to a heuristic bound calculated as $num\_papers\times reviewers\_per\_paper\times 0.4$. That is, assumes a similarity of 0.4 among all the reviewers and papers.
 
-The **beam search** algorithm is implemented as branch and bound when the lower bound is 0 and the size of the priority queue is limited to a maximum number of items.
+- **Beam search**: implemented as branch and bound when the lower bound is 0 and the size of the priority queue is limited to a maximum number of items.
 
 # 🛠️ Installation
----
 Just install all the required packages with:
 
 ```bash
@@ -78,17 +75,14 @@ pip install -r requirements.txt
 ```
 
 # 👨🏻‍💻 Usage
----
 You can use IberMatcher through the command line or programmatically.
 
 Although not necessary for the programmatic usage, it is recommended to format your papers and reviewers pools using excel files.
 
-For **papers**, the columns `title`, `contact`, `email`, `authors`, `institutions`, and `countries` are mandatory, and all of them *strings*. The columns `authors`, `institutions`, and `countries` must be strings with items separated with `\n`.
-
-For **reviewers**, the columns `full_name`, `institution`, `country`, `email`, `categories` are mandatory, and all of them *strings*. The column `categories` must be a string of categories separated with `;`.
+> [!TIP] 
+> For **papers**, the columns `title`, `contact`, `email`, `authors`, `institutions`, and `countries` are mandatory, and all of them must be *strings*. The columns `authors`, `institutions`, and `countries` must be strings with items separated with `\n`. </br></br>For **reviewers**, the columns `full_name`, `institution`, `country`, `email`, `categories` are mandatory, and all of them must be *strings*. The column `categories` must be a string of categories separated with `;`.
 
 ## </> Programmatic
----
 Here you have the full control for using IberMatcher. You load the pools, define any constraint, and parameterize the matching algorithms as you prefer. Here is an example:
 
 ```python
@@ -110,9 +104,6 @@ from functools import partial
 # Load your papers and reviewer pools
 papers_collection = load_papers("etc/papers_pool_abstract.xlsx")
 reviewers_collection = load_reviewers("etc/reviewers_pool.xlsx")
-
-papers_collection = dict(list(papers_collection.items()))
-reviewers_collection = dict(list(reviewers_collection.items()))
 
 # Define the feasibility constraints
 reviewers_per_paper = 2
@@ -163,7 +154,6 @@ print(solution, score)
 ```
 
 ## 📟 CLI
----
 From CLI, you must specify two excel files, the number of reviewers per paper and the matcher (`greedy`, `branch_and_bound`, or `beam_search`).
 
 ```bash
@@ -171,7 +161,6 @@ python -m ibermatcher.cli [OPTIONS] PAPERS_PATH REVIEWERS_PATH REVIEWERS_PER_PAP
 ```
 
 ## 📤 Assignment example
----
 To illustrate how the output looks like, here is an example of alignment, computed with the greedy algorithm, for IberLEF 2025. Do you agree with it? 😋:
 
 ```json
@@ -252,5 +241,4 @@ To illustrate how the output looks like, here is an example of alignment, comput
 ```
 
 # 🤝 Contributing
----
 Please, use `dev-tools` to contribute to this repo.
