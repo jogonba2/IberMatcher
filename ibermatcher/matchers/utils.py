@@ -1,14 +1,26 @@
 from queue import PriorityQueue
 from random import shuffle
-from typing import Callable
+from typing import Callable, Literal
 
 import numpy as np
 
 from ..types import Paper, PriorityEntry, Reviewer
 
 
-def max_sim_pairwise(X: np.ndarray, y: np.ndarray) -> float:
-    return (X @ y.T).max().item()
+def sim_pairwise(
+    X: np.ndarray, y: np.ndarray, aggregation: Literal["max", "mean"] = "max"
+) -> float:
+    X_norm = X / np.linalg.norm(X, axis=1, keepdims=True)
+    y_norm = y / np.linalg.norm(y)
+
+    similarities = X_norm @ y_norm.T
+
+    if aggregation == "max":
+        return similarities.max().item()
+    elif aggregation == "mean":
+        return similarities.mean().item()
+    else:
+        raise ValueError("Invalid aggregation method. Choose 'max' or 'mean'.")
 
 
 def precompute_scores(
@@ -21,7 +33,7 @@ def precompute_scores(
         paper_embedding = papers_collection[paper_title].embedding
         for reviewer_name in reviewers_collection:
             reviewer_embeddings = reviewers_collection[reviewer_name].embeddings
-            score = max_sim_pairwise(reviewer_embeddings, paper_embedding)
+            score = sim_pairwise(reviewer_embeddings, paper_embedding)
             scores[paper_title][reviewer_name] = score
         scores[paper_title] = dict(
             sorted(

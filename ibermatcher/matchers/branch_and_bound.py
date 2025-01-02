@@ -141,9 +141,11 @@ def match_by_branch_and_bound(
         )
 
         if not best_solution:
-            # An estimate lower bound based on similarity 0.4 for all the reviewers in all the papers
+            # An estimate lower bound based on similarity:
+            # 0.4 for all the reviewers in all the papers
             _logger.info(
-                "Do not exists a greedy solution, using the constant similarity heuristic."
+                "Do not exists a greedy solution, using"
+                " the constant similarity heuristic."
             )
             best_score = len(papers_collection) * reviewers_per_paper * 0.4
     else:
@@ -167,7 +169,8 @@ def match_by_branch_and_bound(
         entry = queue.get()
         sol, score = entry.data, entry.priority
         # If the partial solution is not a leaf:
-        # 1) Branch the partial solution by adding one reviewer to the first uncomplete paper
+        # 1) Branch the partial solution by adding one reviewer
+        #    to the first uncomplete paper
         # 2) Compute the upper bound of each branch
         # 3) Add those whose upper bound is greater than the best solution
         if not is_leaf(
@@ -196,7 +199,8 @@ def match_by_branch_and_bound(
                     explored_branches += 1
                 else:
                     pruned_branches += 1
-        # Otherwise, if the leaf improves the score, it is our best current solution :)
+        # Otherwise, if the leaf improves the score,
+        # it is our best current solution :)
         else:
             if score < best_score:
                 best_solution, best_score = sol, score

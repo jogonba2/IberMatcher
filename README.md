@@ -42,7 +42,7 @@ $$
 Here:
 - $\text{categories}(a_{ij})$ refers to the list of research category embeddings associated with reviewer $a_{ij}$.
 - $\text{definition}(p_i)$ refers to the embedding of paper $p_i$, derived from its title and abstract.
-- $\text{sim}$ represents a similarity function between a list of embeddings and an embedding. For this assignment, it evaluates the maximum similarity between a reviewer’s research categories and the paper’s definition:
+- $\text{sim}$ represents a similarity function between a list of embeddings and an embedding. For instance, the maximum similarity between a reviewer’s research categories and the paper’s definition:
 
 $$
 \text{sim}(X, y) = \max_{\mathbf{x} \in X} f(\mathbf{x}, \mathbf{y})
@@ -63,10 +63,10 @@ subject to a set of constraints $\mathcal{C}$, which ensure the fairness and fea
 5. Reviewers for a paper must not belong to the institution of the paper’s authors.
 6. All papers must be reviewed by exactly $k$ reviewers.
 
-All these constraints all already integrated in IberMatch.
+All these constraints all already integrated in IberMatcher. IberMatcher provides three strategies to find the optimal assignment $A^*$.
 
 # 🧮 Matching algorithms
-IberMatch provides three matching algorithms: **greedy**, **beam search**, and **branch and bound**.
+IberMatcher provides three matching algorithms: **greedy**, **beam search**, and **branch and bound**.
 
 - **Greedy**: evaluates, paper by paper, all potential reviewers and assigns to each paper the highest-ranked reviewers, ensuring feasible solutions (meeting the constraints $\mathcal{C}$). Since finding a greedy solution depends on the order of the papers and reviewers, the algorithm is repeated several times by shuffling papers and reviewers and returns the best solution if any.
 
@@ -99,36 +99,26 @@ from ibermatcher.matchers import (
     match_by_beam_search,
     match_by_branch_and_bound,
 )
-from ibermatcher.constraints import (
-    unique_reviewers,
-    reviewer_not_author,
-    reviewer_underload,
-    reviewers_from_different_institutions,
-    reviewers_not_authors_institutions,
-)
-from functools import partial
+from ibermatcher.constraints import get_constraints
 
 # Load your papers and reviewer pools
-papers_collection = load_papers("etc/papers_pool_abstract.xlsx")
+papers_collection = load_papers("etc/papers_pool.xlsx")
 reviewers_collection = load_reviewers("etc/reviewers_pool.xlsx")
 
 # Define the feasibility constraints
 reviewers_per_paper = 2
-constraints = [
-    partial(reviewer_underload, reviewers_per_paper=reviewers_per_paper),
-    partial(reviewer_not_author, papers_collection=papers_collection),
-    unique_reviewers,
-    partial(
-        reviewers_from_different_institutions,
-        reviewers_collection=reviewers_collection,
-    ),
-    partial(
-        reviewers_not_authors_institutions,
-        papers_collection=papers_collection,
-        reviewers_collection=reviewers_collection,
-    ),
-]
-
+constraints = get_constraints(
+    [
+        "reviewer_underload",
+        "reviewer_not_author",
+        "unique_reviewers",
+        "reviewers_from_different_institutions",
+        "reviewers_not_authors_institutions",
+    ],
+    papers_collection,
+    reviewers_collection,
+    reviewers_per_paper,
+)
 
 # Match using greedy matcher
 solution, score = match_by_greedy(

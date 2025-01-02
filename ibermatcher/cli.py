@@ -1,7 +1,8 @@
-from typer import run
+import typer
+from typing_extensions import Annotated
 
 from .cli_utils import load_papers, load_reviewers
-from .constraints import get_all_constraints
+from .constraints import get_constraints
 from .logging import get_logger
 from .matchers import get_matcher
 
@@ -9,10 +10,19 @@ _logger = get_logger(__name__)
 
 
 def match(
-    papers_path: str,
-    reviewers_path: str,
-    reviewers_per_paper: int,
-    matcher: str,
+    papers_path: Annotated[
+        str, typer.Argument(help="Path to the papers pool (excel file)")
+    ],
+    reviewers_path: Annotated[
+        str, typer.Argument(help="Path to the reviewers pool (excel file)")
+    ],
+    reviewers_per_paper: Annotated[
+        int, typer.Argument(help="Number of reviewers per paper")
+    ],
+    matcher: Annotated[str, typer.Argument(help="Matcher name")],
+    constraint_names: Annotated[
+        list[str], typer.Argument(help="Names of the constraints")
+    ] = [],
 ):
 
     # Load pools
@@ -23,8 +33,11 @@ def match(
     matcher_fn = get_matcher(matcher)
 
     # Instantiate constraints
-    constraints = get_all_constraints(
-        papers_collection, reviewers_collection, reviewers_per_paper
+    constraints = get_constraints(
+        constraint_names,
+        papers_collection,
+        reviewers_collection,
+        reviewers_per_paper,
     )
 
     # Run the matcher
@@ -39,4 +52,4 @@ def match(
 
 
 if __name__ == "__main__":
-    run(match)
+    typer.run(match)
