@@ -20,11 +20,10 @@ def match(
         int, typer.Argument(help="Number of reviewers per paper")
     ],
     matcher: Annotated[str, typer.Argument(help="Matcher name")],
-    constraint_names: Annotated[
-        list[str], typer.Argument(help="Names of the constraints")
-    ] = [],
+    constraint_names: list[str] = typer.Option(
+        [], help="Names of the constraints"
+    ),
 ):
-
     # Load pools
     papers_collection = load_papers(papers_path)
     reviewers_collection = load_reviewers(reviewers_path)
