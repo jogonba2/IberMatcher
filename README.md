@@ -25,36 +25,43 @@ https://creativecommons.org/licenses/by-sa/4.0
 </h3>
 
 # 📖 Introduction
-IberMatcher is a package to find the best reviewers for IberLEF task proposals. The problem definition is as follows.
+IberMatcher is a package to find the best reviewers for IberLEF task proposals. The core problem can be described as follows.
 
-We have a set of $N$ papers: $\mathcal{P} = \lbrace p_1, ..., p_N\rbrace$, and a set of $R$ reviewers: $\mathcal{R} = \lbrace r_1, ..., r_R\rbrace$. We have to found a paper-reviewer assignment $A$ as:
+Given a set of $N$ papers $\mathcal{P} = \lbrace p_1, p_2, \ldots, p_N \rbrace$ and a set of $R$ reviewers $\mathcal{R} = \lbrace r_1, r_2, \ldots, r_R \rbrace$, the goal is to determine an assignment $A$ that optimally matches $k$ reviewers to each paper:
 
-$A = \lbrace a_1, a_2, ..., a_N: a_i = \lbrace a_{i1}, ..., a_{ik} : a_{ij} \in \mathcal{R}\rbrace\rbrace$
+$$
+A = \lbrace a_1, a_2, \ldots, a_N : a_i = \lbrace a_{i1}, \ldots, a_{ik} : a_{ij} \in \mathcal{R} \rbrace \rbrace
+$$
 
-where $k$ is the number of reviewers per paper.
+The objective is to maximize the assignment score $s(A)$:
 
-The objective is to maximize the score $s(A)$:
+$$
+s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k} \text{sim}(\text{categories}(a_{ij}), \text{definition}(p_i))
+$$
 
-$s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k}\ \text{sim}(\text{categories}(a_{ij}), \text{definition}(p_i))$
+Here:
+- $\text{categories}(a_{ij})$ refers to the list of research category embeddings associated with reviewer $a_{ij}$.
+- $\text{definition}(p_i)$ refers to the embedding of paper $p_i$, derived from its title and abstract.
+- $\text{sim}$ represents a similarity function between a list of embeddings and an embedding. For this assignment, it evaluates the maximum similarity between a reviewer’s research categories and the paper’s definition:
 
-subject to a set of constraints $\mathcal{C}$, where categories($a_{ij}$) is the list of research categories embeddings of the reviewer $j$ assigned to the paper $i$, and definition($p_i$) is the embedding of the $p_i$ paper's definition, e.g., title and abstract.
+$$
+\text{sim}(X, y) = \max_{\mathbf{x} \in X} f(\mathbf{x}, \mathbf{y})
+$$
 
-In this context, $sim$ can be any similarity function between a list of strings and a string. Intuitively, the best suited similarity for the paper-reviewer assignation is the maximum similarity between a research category and the paper definition, e.g.:
+The optimal assignment $A^*$ is defined as:
 
-$sim(X, y) = \underset{\mathbf{x}\in X}{max}\; f(\mathbf{x}, \mathbf{y})$
+$$
+A^* = \underset{A \in \mathcal{A}}{\arg\max}\ s(A)
+$$
 
-The optimal solution to the paper-reviewer assignation is given by:
+subject to a set of constraints $\mathcal{C}$, which ensure the fairness and feasibility of the assignments:
 
-$s(A)^* = \underset{A\in \mathcal{A}}{argmax}\;S(A)$
-
-subject to a set of constraints $\mathcal{C}$:
-
-1. A reviewer can not be assigned to more than $l$ papers
-2. A reviewer can not be more than one time to a paper
-3. A reviewer can not review their own paper
-4. The reviewers of a paper must be from different institutions
-5. The reviewers of a paper can not pertain to the institution of the paper's authors
-6. All the papers must be reviewed by $k$ reviewers
+1. A reviewer cannot be assigned to more than $l$ papers.
+2. A reviewer cannot be assigned multiple times to the same paper.
+3. A reviewer cannot review their own paper.
+4. Reviewers for a paper must belong to different institutions.
+5. Reviewers for a paper must not belong to the institution of the paper’s authors.
+6. All papers must be reviewed by exactly $k$ reviewers.
 
 All these constraints all already integrated in IberMatch.
 
@@ -63,7 +70,7 @@ IberMatch provides three matching algorithms: **greedy**, **beam search**, and *
 
 - **Greedy**: evaluates, paper by paper, all potential reviewers and assigns to each paper the highest-ranked reviewers, ensuring feasible solutions (meeting the constraints $\mathcal{C}$). Since finding a greedy solution depends on the order of the papers and reviewers, the algorithm is repeated several times by shuffling papers and reviewers and returns the best solution if any.
 
-- **Branch and bound**: adheres to the [classical BnB framework](https://en.wikipedia.org/wiki/Branch_and_bound) to identify optimal assignments. At each step, it evaluates the most promising solutions by employing a greedy solution as the lower bound and an optimistic upper bound derived by relaxing all constraints. This approach guides the selection of promising branches for further exploration. If a greedy solution is unavailable, the algorithm resorts to a heuristic bound calculated as $num\_papers\times reviewers\_per\_paper\times 0.4$. That is, assumes a similarity of 0.4 among all the reviewers and papers.
+- **Branch and bound**: adheres to the [classical BnB framework](https://en.wikipedia.org/wiki/Branch_and_bound) to identify optimal assignments. At each step, it evaluates the most promising solutions by employing a greedy solution as the lower bound and an optimistic upper bound derived by relaxing all constraints. This approach guides the selection of promising branches for further exploration. If a greedy solution is unavailable, the algorithm resorts to a heuristic bound calculated as $numpapers\times reviewersperpaper\times 0.4$. That is, assumes a similarity of 0.4 among all the reviewers and papers.
 
 - **Beam search**: implemented as branch and bound when the lower bound is 0 and the size of the priority queue is limited to a maximum number of items.
 
