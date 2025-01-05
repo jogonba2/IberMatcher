@@ -59,17 +59,23 @@ $$
 where $\mathcal{A}$ is the set of all feasible assignments satisfying a set of constraints $\mathcal{C}$, which ensure the fairness of the assignments:
 
 1. **Paper review limits**: each paper $p_i$ must be assigned exactly to $k$ reviewers:
+
 $$
 |a_i|=k,\quad \forall i\in\lbrace 1\ldots, N\rbrace
 $$
+
 2. **Reviewer capacity**: a reviewer $r_j$ cannot be assigned to more than $l$ papers:
+
 $$
 |\lbrace i : r_j \in a_i\rbrace|\leq l\quad \forall j\in\lbrace 1,\ldots, R\rbrace
 $$
+
 3. **Unique reviewers per paper**: a reviewer cannot be assigned to the same paper multiple times:
+
 $$
-a_{ij}\neq a_{ij^{'}}\quad \forall i\in\lbrace 1\ldots, N\rbrace, j\neq j^{'}
+a_{ij}\neq a_{ij^{\prime}}\quad \forall i\in\lbrace 1\ldots, N\rbrace, j\neq j^{\prime}
 $$
+
 4. **Reviewer conflict restrictions**: restrictions related to conflicts of interest implying authorship and institutions.
    * A reviewer cannot be assigned to review their own paper.
    * Reviewers assigned to the paper $p_i$ must belong to different institutions.
