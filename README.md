@@ -33,36 +33,48 @@ $$
 A = \lbrace a_1, a_2, \ldots, a_N : a_i = \lbrace a_{i1}, \ldots, a_{ik} : a_{ij} \in \mathcal{R} \rbrace \rbrace
 $$
 
-The objective is to maximize the assignment score $s(A)$:
+The goal is to maximize the total assignment score $s(A)$, given by:
 
 $$
-s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k} \text{sim}(\text{categories}(a_{ij}), \text{definition}(p_i))
+s(A) = \sum_{i=1}^{N} \sum_{j=1}^{k} f(a_{ij}, p_i)
 $$
 
-Here:
-- $\text{categories}(a_{ij})$ refers to the list of research category embeddings associated with reviewer $a_{ij}$.
-- $\text{definition}(p_i)$ refers to the embedding of paper $p_i$, derived from its title and abstract.
-- $\text{sim}$ represents a similarity function between a list of embeddings and an embedding. For instance, the maximum similarity between a reviewer’s research categories and the paper’s definition:
+where $f: \mathcal{R}\times\mathcal{P} \rightarrow \mathbb{R}$ measures the suitability of the reviewer $a_{ij}$ for the paper $p_i$. $f$ is derived from a similarity measure $\textrm{sim}$ applied to the embeddings of reviewers and papers. In IberMatcher, $f$ is defined as follows:
 
 $$
-\text{sim}(X, y) = \max_{\mathbf{x} \in X} f(\mathbf{x}, \mathbf{y})
+f(X, \mathbf{y}) = \max_{\mathbf{x} \in X} \text{sim}(\mathbf{x}, \mathbf{y})
 $$
 
-The optimal assignment $A^*$ is defined as:
+where:
+- $X$ represents the set of research category embeddings for a reviewer.
+- $\mathbf{y}$ is the embedding of a paper (e.g., derived from its title and abstract).
+- $\text{sim}(\mathbf{x}, \mathbf{y})$ computes the cosine similarity between embeddings $\mathbf{x}$ and $\mathbf{y}$.
+
+The optimal assignment $A^*$ is then defined as:
 
 $$
 A^* = \underset{A \in \mathcal{A}}{\arg\max}\ s(A)
 $$
 
-subject to a set of constraints $\mathcal{C}$, which ensure the fairness and feasibility of the assignments:
+where $\mathcal{A}$ is the set of all feasible assignments satisfying a set of constraints $\mathcal{C}$, which ensure the fairness of the assignments:
 
-1. A reviewer cannot be assigned to more than $l$ papers.
-2. A reviewer cannot be assigned multiple times to the same paper.
-3. A reviewer cannot review their own paper.
-4. Reviewers for a paper must belong to different institutions.
-5. Reviewers for a paper must not belong to the institution of the paper’s authors.
-6. All papers must be reviewed by exactly $k$ reviewers.
-
+1. **Paper review limits**: each paper $p_i$ must be assigned exactly to $k$ reviewers:
+$$
+|a_i|=k,\quad \forall i\in\lbrace 1\ldots, N\rbrace
+$$
+2. **Reviewer capacity**: a reviewer $r_j$ cannot be assigned to more than $l$ papers:
+$$
+|\lbrace i : r_j \in a_i\rbrace|\leq l\quad \forall j\in\lbrace 1,\ldots, R\rbrace
+$$
+3. **Unique reviewers per paper**: a reviewer cannot be assigned to the same paper multiple times:
+$$
+a_{ij}\neq a_{ij^{'}}\quad \forall i\in\lbrace 1\ldots, N\rbrace, j\neq j^{'}
+$$
+4. **Reviewer conflict restrictions**: restrictions related to conflicts of interest implying authorship and institutions.
+   * A reviewer cannot be assigned to review their own paper.
+   * Reviewers assigned to the paper $p_i$ must belong to different institutions.
+   * Reviewers assigned to the paper $p_i$ must not belong to the same institution as any of $p_i$'s authors.
+   
 All these constraints all already integrated in IberMatcher. IberMatcher provides three strategies to find the optimal assignment $A^*$.
 
 # 🧮 Matching algorithms
