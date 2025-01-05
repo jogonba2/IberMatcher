@@ -73,7 +73,7 @@ $$
 3. **Unique reviewers per paper**: a reviewer cannot be assigned to the same paper multiple times:
 
 $$
-a_{ij}\neq a_{ij^{'}}\quad \forall i\in\lbrace 1\ldots, N\rbrace, j\neq j^{'}
+a_{ij}\neq a_{ij^{\prime}}\quad \forall i\in\lbrace 1\ldots, N\rbrace, j\neq j^{\prime}
 $$
 
 4. **Reviewer conflict restrictions**: restrictions related to conflicts of interest implying authorship and institutions.
