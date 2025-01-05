@@ -9,7 +9,7 @@ def match_by_beam_search(
     reviewers_collection: dict[str, Reviewer],
     constraints: list[Callable],
     reviewers_per_paper: int,
-    beam_size: int,
+    beam_size: int = 50,
     return_first_solution: bool = True,
 ):
     return match_by_branch_and_bound(

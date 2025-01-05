@@ -95,6 +95,7 @@ def get_constraints(
     reviewers_per_paper: int,
 ) -> list[Callable]:
 
+    # If not constraints provided, use all of them
     if not names:
         names = list(CONSTRAINTS.keys())
 
